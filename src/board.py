@@ -3,13 +3,10 @@ from .cell import Cell
 
 class Board:
     def __init__(self, rows: int, cols: int, mines: int):
-        # Validações
         if rows <= 0 or cols <= 0:
-            raise ValueError("Número de linhas e colunas deve ser positivo")
-        if mines < 0:
-            raise ValueError("Número de minas não pode ser negativo")
-        if mines > rows * cols:
-            raise ValueError("Número de minas não pode exceder número de células")
+            raise ValueError("Board dimensions must be positive.")
+        if mines < 0 or mines >= rows * cols:
+            raise ValueError("Invalid number of mines.")
 
         self.rows = rows
         self.cols = cols
@@ -30,11 +27,11 @@ class Board:
                 if not self.grid[r][c].is_mine:
                     self.grid[r][c].neighboring_mines = self._count_adjacent_mines(r, c)
 
-    def _count_adjacent_mines(self, row, col):
+    def _count_adjacent_mines(self, row: int, col: int) -> int:
         count = 0
         for dr in [-1, 0, 1]:
             for dc in [-1, 0, 1]:
-                if dr == dc == 0:
+                if dr == 0 and dc == 0:
                     continue
                 nr, nc = row + dr, col + dc
                 if 0 <= nr < self.rows and 0 <= nc < self.cols:
@@ -42,36 +39,30 @@ class Board:
                         count += 1
         return count
 
-    def reveal_cell(self, row, col):
+    def reveal_cell(self, row: int, col: int) -> bool:
         cell = self.grid[row][col]
-        if cell.reveal():
-            return True  # Explodiu mina
+
+        # ❌ Se estiver marcada com bandeira, não revela
+        if cell.is_flagged:
+            return False
+
+        if cell.reveal():  # retorna True se for mina
+            return True
+
         if cell.neighboring_mines == 0:
             self._reveal_neighbors(row, col)
+
         return False
 
-    def _reveal_neighbors(self, row, col):
+    def _reveal_neighbors(self, row: int, col: int):
         for dr in [-1, 0, 1]:
             for dc in [-1, 0, 1]:
                 nr, nc = row + dr, col + dc
                 if 0 <= nr < self.rows and 0 <= nc < self.cols:
                     neighbor = self.grid[nr][nc]
-                    if not neighbor.is_revealed and not neighbor.is_mine:
+
+                    # ✅ ignora reveladas, minas e células com bandeira
+                    if not neighbor.is_revealed and not neighbor.is_flagged and not neighbor.is_mine:
                         neighbor.reveal()
                         if neighbor.neighboring_mines == 0:
                             self._reveal_neighbors(nr, nc)
-
-    def display(self):
-        for r in range(self.rows):
-            row_display = ""
-            for c in range(self.cols):
-                cell = self.grid[r][c]
-                if cell.is_flagged:
-                    row_display += " F "
-                elif not cell.is_revealed:
-                    row_display += " ? "
-                elif cell.is_mine:
-                    row_display += " * "
-                else:
-                    row_display += f" {cell.neighboring_mines} "
-            print(row_display)
