@@ -3,6 +3,14 @@ from .cell import Cell
 
 class Board:
     def __init__(self, rows: int, cols: int, mines: int):
+        # Validações
+        if rows <= 0 or cols <= 0:
+            raise ValueError("Número de linhas e colunas deve ser positivo")
+        if mines < 0:
+            raise ValueError("Número de minas não pode ser negativo")
+        if mines > rows * cols:
+            raise ValueError("Número de minas não pode exceder número de células")
+
         self.rows = rows
         self.cols = cols
         self.mines = mines
