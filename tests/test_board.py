@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 from src.board import Board
 
 def test_board_creation():  # ✅ positivo
@@ -56,3 +57,9 @@ def test_reveal_flagged_cell_does_not_explode():  # ❌ negativo
     result = board.reveal_cell(0, 0)
     assert result is False  # não deve revelar mina nem explodir
     assert not board.grid[0][0].is_revealed
+
+def test_board_with_mocked_mines():  # ✅ positivo com mock
+    with patch("src.board.random.sample", return_value=[0, 4]):
+        board = Board(3, 3, 2)
+        assert board.grid[0][0].is_mine
+        assert board.grid[1][1].is_mine
