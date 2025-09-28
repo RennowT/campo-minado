@@ -1,5 +1,6 @@
 import random
 from .cell import Cell
+from colorama import Fore, Style
 
 class Board:
     def __init__(self, rows: int, cols: int, mines: int):
@@ -66,3 +67,18 @@ class Board:
                         neighbor.reveal()
                         if neighbor.neighboring_mines == 0:
                             self._reveal_neighbors(nr, nc)
+                            
+    def display(self):
+        for r in range(self.rows):
+            row_str = ""
+            for c in range(self.cols):
+                cell = self.grid[r][c]
+                if cell.is_flagged:
+                    row_str += "F "
+                elif not cell.is_revealed:
+                    row_str += "? "
+                elif cell.is_mine:
+                    row_str += "* "
+                else:
+                    row_str += str(cell.neighboring_mines) + " "
+            print(row_str.strip())
